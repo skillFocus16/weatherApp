@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
         viewPagerAdapter.setItems(regions);
         viewPager.setAdapter(viewPagerAdapter);
-        viewPager.setCurrentItem(0);
+//        viewPager.setCurrentItem(0);
         bottomProgressDots(viewPagerAdapter.getCount(),0);
         viewPager.addOnPageChangeListener(viewPagerPageChangeListener);
     }
@@ -162,14 +162,9 @@ public class MainActivity extends AppCompatActivity {
             ImageView humidityIcon = view.findViewById(R.id.humidityIcon);
             ImageView pressureIcon = view.findViewById(R.id.pressureIcon);
 
-            TextView windTxt = view.findViewById(R.id.windTxt);
-            TextView humidityTxt = view.findViewById(R.id.humidityTxt);
-            TextView airPressTxt = view.findViewById(R.id.airPressTxt);
-
-            Log.e("windSpeed?: ", String.valueOf(regions.get(position).getWindSpeed()));
-            ((TextView) view.findViewById(R.id.windTxt)).setText(""+regions.get(position).getWindSpeed());
-            ((TextView) view.findViewById(R.id.humidityTxt)).setText(""+regions.get(position).getHumidity());
-            ((TextView) view.findViewById(R.id.airPressTxt)).setText(""+regions.get(position).getPressure());
+            ((TextView) view.findViewById(R.id.windTxt)).setText(""+regions.get(position).getWindSpeed()+"m/s");
+            ((TextView) view.findViewById(R.id.humidityTxt)).setText(""+regions.get(position).getHumidity()+"%");
+            ((TextView) view.findViewById(R.id.airPressTxt)).setText(""+regions.get(position).getPressure()+"hPa");
 
             Glide.with(MainActivity.this)
                     .load(R.mipmap.ic_launcher)
@@ -199,8 +194,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-//            return about_title_array.length;
-//            return regions.size();
             return regions.size();
         }
 
@@ -294,16 +287,16 @@ public class MainActivity extends AppCompatActivity {
                 mRegion.setPressure(main.getInt("pressure"));
                 mRegion.setHumidity(main.getInt("humidity"));
 
-                /*JSONArray weatherArray = in.getJSONArray("weather");
+                JSONArray weatherArray = in.getJSONArray("weather");
                 for (int j=0; j<weatherArray.length(); j++) {
-                    JSONObject we = weatherArray.getJSONObject(i);
+                    JSONObject we = weatherArray.getJSONObject(j);
                     mRegion.setMainDesc(we.getString("description"));
                     Log.e("getting2??: ",in.getString("name"));
+                }
 
-                }*/
                 JSONObject wind = in.getJSONObject("wind");
-                mRegion.setWindSpeed(wind.getInt("speed"));
-
+                mRegion.setWindSpeed(wind.getDouble("speed"));
+                Log.e("jamanii?: ", String.valueOf(wind.getDouble("speed")));
                 mRegion.setName(in.getString("name"));
             }
 
