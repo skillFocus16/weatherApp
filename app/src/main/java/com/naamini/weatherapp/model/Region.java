@@ -6,27 +6,29 @@ package com.naamini.weatherapp.model;
 public class Region {
 
     private String name;
-    private int regId;
+    private int weatherId;
     private double temp;
     private double windSpeed;
     private int humidity;
     private int pressure;
     private String mainDesc;
     private String countryName;
+    private String icon;
 
     public Region() {
     }
 
-    public Region(String name, int regId, double temp, double windSpeed,
-                  int humidity, int pressure, String mainDesc, String countryName) {
+    public Region(String name, int weatherId, double temp, double windSpeed,
+                  int humidity, int pressure, String mainDesc, String countryName, String icon) {
         this.name = name;
-        this.regId = regId;
+        this.weatherId = weatherId;
         this.temp = temp;
         this.windSpeed = windSpeed;
         this.humidity = humidity;
         this.pressure = pressure;
         this.mainDesc = mainDesc;
         this.countryName = countryName;
+        this.icon = icon;
     }
 
     public String getName() {
@@ -37,12 +39,12 @@ public class Region {
         this.name = name;
     }
 
-    public int getRegId() {
-        return regId;
+    public int getWeatherId() {
+        return weatherId;
     }
 
-    public void setRegId(int regId) {
-        this.regId = regId;
+    public void setWeatherId(int weatherId) {
+        this.weatherId = weatherId;
     }
 
     public double getTemp() {
@@ -91,5 +93,13 @@ public class Region {
 
     public void setCountryName(String countryName) {
         this.countryName = countryName;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 }

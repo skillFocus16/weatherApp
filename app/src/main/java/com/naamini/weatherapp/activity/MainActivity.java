@@ -37,6 +37,7 @@ import cz.msebera.android.httpclient.Header;
 
 import static com.naamini.weatherapp.config.Endpoints.get3Cities;
 import static com.naamini.weatherapp.config.Endpoints.getoneCity;
+import static com.naamini.weatherapp.config.Endpoints.iconUrl;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -137,12 +138,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//            Region r = regions.get(position);
 
             View view = layoutInflater.inflate(R.layout.item_card, container, false);
             regions.get(position);
-
-//            ((TextView) view.findViewById(R.id.title)).setText(array_welcome_title[position]);
 
 //            RelativeLayout mainLayout = view.findViewById(R.id.mainLayout);
             /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -153,11 +151,12 @@ public class MainActivity extends AppCompatActivity {
             TextView desc = view.findViewById(R.id.desc);
             TextView regName = view.findViewById(R.id.regName);
 
-            temp.setText(String.valueOf(regions.get(position).getTemp()));
+            temp.setText(String.valueOf(regions.get(position).getTemp())+(char) 0x00B0);
             desc.setText(String.valueOf(regions.get(position).getMainDesc()));
 
             regName.setText(String.valueOf(regions.get(position).getName()));
 
+            ImageView icon = view.findViewById(R.id.icon);
             ImageView windIcon = view.findViewById(R.id.windIcon);
             ImageView humidityIcon = view.findViewById(R.id.humidityIcon);
             ImageView pressureIcon = view.findViewById(R.id.pressureIcon);
@@ -167,17 +166,22 @@ public class MainActivity extends AppCompatActivity {
             ((TextView) view.findViewById(R.id.airPressTxt)).setText(""+regions.get(position).getPressure()+"hPa");
 
             Glide.with(MainActivity.this)
-                    .load(R.mipmap.ic_launcher)
+                    .load(iconUrl+regions.get(position).getIcon()+".png")
+                    .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.AUTOMATIC))
+                    .into(icon);
+
+            Glide.with(MainActivity.this)
+                    .load(R.drawable.ic_wind)
                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.AUTOMATIC))
                     .into(windIcon);
 
             Glide.with(MainActivity.this)
-                    .load(R.mipmap.ic_launcher)
+                    .load(R.drawable.ic_humidity)
                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.AUTOMATIC))
                     .into(humidityIcon);
 
             Glide.with(MainActivity.this)
-                    .load(R.mipmap.ic_launcher)
+                    .load(R.drawable.ic_pressure)
                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.AUTOMATIC))
                     .into(pressureIcon);
             container.addView(view);
@@ -212,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void gettingWeather() {
         final ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
-        progressDialog.setMessage("fetching weather");
+        progressDialog.setMessage(getString(R.string.fetching_weather));
         progressDialog.setCancelable(false);
         progressDialog.show();
 
@@ -221,7 +225,6 @@ public class MainActivity extends AppCompatActivity {
         final int DEFAULT_TIMEOUT = 20 * 1000;
         AsyncHttpClient client = new AsyncHttpClient();
         client.setTimeout(DEFAULT_TIMEOUT);
-//        client.setBasicAuth(basicAuthUsername, basicAuthPassword);
         client.get(get3Cities, params, new AsyncHttpResponseHandler() {
 
             @Override
@@ -291,12 +294,13 @@ public class MainActivity extends AppCompatActivity {
                 for (int j=0; j<weatherArray.length(); j++) {
                     JSONObject we = weatherArray.getJSONObject(j);
                     mRegion.setMainDesc(we.getString("description"));
-                    Log.e("getting2??: ",in.getString("name"));
+                    mRegion.setWeatherId(we.getInt("id"));
+                    mRegion.setIcon(we.getString("icon"));
+                    Log.e("icon??:", we.getString("icon"));
                 }
 
                 JSONObject wind = in.getJSONObject("wind");
                 mRegion.setWindSpeed(wind.getDouble("speed"));
-                Log.e("jamanii?: ", String.valueOf(wind.getDouble("speed")));
                 mRegion.setName(in.getString("name"));
             }
 

@@ -3,4 +3,6 @@
     <string name="air_pressure">Air Pressure</string>
     <string name="humidity">Humidity</string>
     <string name="wind">Wind</string>
+    <string name="fetching_weather">Fetching weather...</string>
+    <string name="none">--</string>
 </resources>

@@ -23,38 +23,39 @@
                android:id="@+id/tempDegrees"
                android:layout_width="wrap_content"
                android:layout_height="wrap_content"
-               android:text="18 degrees"
+               android:text="@string/none"
+               android:textSize="45sp"
                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-               android:textColor="@color/colorPrimary"
+               android:textColor="@android:color/white"
                android:textStyle="bold" />
 
            <TextView
                android:id="@+id/desc"
                android:layout_width="wrap_content"
                android:layout_height="wrap_content"
-               android:layout_alignParentTop="true"
-               android:text="Sunny"
+               android:text="@string/none"
+               android:textSize="25sp"
                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-               android:textColor="@color/colorPrimary"
-               android:textStyle="bold" />
+               android:textColor="@android:color/white"
+               android:textStyle="bold"
+               app:fontFamily="sans-serif-medium"/>
 
            <TextView
                android:id="@+id/regName"
                android:layout_width="wrap_content"
                android:layout_height="wrap_content"
-               android:layout_alignParentTop="true"
-               android:text="Dar es Salaam"
+               android:text="@string/none"
                android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-               android:textColor="@color/colorPrimary"
+               android:textColor="@android:color/white"
                android:textStyle="bold" />
 
        </LinearLayout>
 
        <ImageView
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
+           android:id="@+id/icon"
+           android:layout_width="60dp"
+           android:layout_height="60dp"
            android:contentDescription="@string/app_name"
-           android:src="@mipmap/ic_launcher"
            android:layout_alignParentEnd="true"
            android:layout_alignParentRight="true" />
 
@@ -74,6 +75,7 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="3dp"
             app:cardElevation="2dp"
+            app:cardBackgroundColor="#D312A9"
             app:cardUseCompatPadding="true"
             android:padding="@dimen/spacing_medium">
 
@@ -87,10 +89,11 @@
 
                 <ImageView
                     android:id="@+id/windIcon"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_margin="@dimen/spacing_middle"
                     android:tint="@android:color/white"
+                    android:layout_marginTop="@dimen/spacing_medium"
                     android:contentDescription="@string/app_name"/>
 
                 <TextView
@@ -98,11 +101,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_large"
-                    android:text="75%"
+                    android:text="@string/none"
                     android:gravity="center"
                     android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"
-                    android:textColor="@android:color/background_dark"
-                    app:fontFamily="sans-serif-medium" />
+                    android:textColor="@android:color/white" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -112,12 +114,11 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="35dp"
-                        android:background="@color/colorPrimary"
+                        android:background="#A5028F"
                         android:gravity="center"
                         android:text="@string/wind"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@android:color/background_dark"
-                        app:fontFamily="sans-serif-medium" />
+                        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                        android:textColor="@android:color/white" />
                 </LinearLayout>
 
 
@@ -136,6 +137,7 @@
             app:cardCornerRadius="3dp"
             app:cardElevation="2dp"
             app:cardUseCompatPadding="true"
+            app:cardBackgroundColor="#C878D1"
             android:padding="@dimen/spacing_medium">
 
             <LinearLayout
@@ -148,10 +150,11 @@
 
                     <ImageView
                         android:id="@+id/humidityIcon"
-                        android:layout_width="45dp"
-                        android:layout_height="45dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:layout_margin="@dimen/spacing_middle"
                         android:tint="@android:color/white"
+                        android:layout_marginTop="@dimen/spacing_medium"
                         android:contentDescription="@string/app_name"/>
 
                 <TextView
@@ -159,12 +162,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_large"
-                    android:text="75%"
+                    android:text="@string/none"
                     android:gravity="center"
                     android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"
-                    android:textColor="@android:color/background_dark"
-                    app:fontFamily="sans-serif-medium" />
+                    android:textColor="@android:color/white" />
 
+                <!--app:fontFamily="sans-serif-medium" -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -173,12 +176,11 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="35dp"
-                        android:background="@color/colorPrimary"
+                        android:background="#CF2BE1"
                         android:gravity="center"
                         android:text="@string/humidity"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@android:color/background_dark"
-                        app:fontFamily="sans-serif-medium" />
+                        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                        android:textColor="@android:color/white" />
                 </LinearLayout>
 
 
@@ -197,6 +199,7 @@
             app:cardCornerRadius="3dp"
             app:cardElevation="2dp"
             app:cardUseCompatPadding="true"
+            app:cardBackgroundColor="#C878D1"
             android:padding="@dimen/spacing_medium">
 
             <LinearLayout
@@ -209,10 +212,11 @@
 
                 <ImageView
                     android:id="@+id/pressureIcon"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_margin="@dimen/spacing_middle"
                     android:tint="@android:color/white"
+                    android:layout_marginTop="@dimen/spacing_medium"
                     android:contentDescription="@string/app_name"/>
 
                 <TextView
@@ -220,10 +224,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_large"
-                    android:text="1025pmg"
+                    android:text="@string/none"
                     android:gravity="center"
                     android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"
-                    android:textColor="@android:color/background_dark"
+                    android:textColor="@android:color/white"
                     app:fontFamily="sans-serif-medium" />
 
                 <LinearLayout
@@ -234,11 +238,11 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="35dp"
-                        android:background="@color/colorPrimary"
+                        android:background="#CF2BE1"
                         android:gravity="center"
                         android:text="@string/air_pressure"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@android:color/background_dark"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                        android:textColor="@android:color/white"
                         app:fontFamily="sans-serif-medium" />
                 </LinearLayout>
 
