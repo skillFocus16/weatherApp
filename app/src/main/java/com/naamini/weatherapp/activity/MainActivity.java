@@ -1,5 +1,6 @@
 package com.naamini.weatherapp.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
@@ -7,6 +8,8 @@ import androidx.viewpager.widget.ViewPager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.PorterDuff;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,7 +39,6 @@ import java.util.List;
 import cz.msebera.android.httpclient.Header;
 
 import static com.naamini.weatherapp.config.Endpoints.get3Cities;
-import static com.naamini.weatherapp.config.Endpoints.getoneCity;
 import static com.naamini.weatherapp.config.Endpoints.iconUrl;
 
 public class MainActivity extends AppCompatActivity {
@@ -67,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         layoutDots = findViewById(R.id.layoutDots);
 
         List<Region> regions = new ArrayList<>();
-        for (int i = 0; i < array_welcome_title.length; i++) {
+        /*for (int i = 0; i < array_welcome_title.length; i++) {
             Region obj = new Region();
 //            obj.name = array_welcome_title[i];
 //            obj.setName(array_welcome_title[i]);
@@ -78,12 +80,12 @@ public class MainActivity extends AppCompatActivity {
             obj.setTemp(temp);
             obj.setMainDesc("yesss");
             regions.add(obj);
-        }
+        }*/
         viewPagerAdapter = new ViewPagerAdapter(regions);
 
         viewPagerAdapter.setItems(regions);
         viewPager.setAdapter(viewPagerAdapter);
-//        viewPager.setCurrentItem(0);
+        viewPager.setCurrentItem(0);
         bottomProgressDots(viewPagerAdapter.getCount(),0);
         viewPager.addOnPageChangeListener(viewPagerPageChangeListener);
     }
@@ -100,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             params.setMargins(10, 10, 10, 10);
             dots[i].setLayoutParams(params);
             dots[i].setImageResource(R.drawable.shape_circle);
-            dots[i].setColorFilter(getResources().getColor(R.color.grey_20), PorterDuff.Mode.SRC_IN);
+            dots[i].setColorFilter(getResources().getColor(R.color.colorPrimaryDark), PorterDuff.Mode.SRC_IN);
             layoutDots.addView(dots[i]);
         }
 
@@ -142,10 +144,14 @@ public class MainActivity extends AppCompatActivity {
             View view = layoutInflater.inflate(R.layout.item_card, container, false);
             regions.get(position);
 
-//            RelativeLayout mainLayout = view.findViewById(R.id.mainLayout);
-            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                mainLayout.setBackground(getResources().getDrawable(R.drawable.ic_launcher_background));
-            }*/
+            RelativeLayout mainLayout = view.findViewById(R.id.mainLayout);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                if(regions.get(position).getIcon().contains("n")) {
+                    mainLayout.setBackground(getResources().getDrawable(R.drawable.night));
+                }else {
+                    mainLayout.setBackground(getResources().getDrawable(R.drawable.day));
+                }
+            }
 
             TextView temp = view.findViewById(R.id.tempDegrees);
             TextView desc = view.findViewById(R.id.desc);
@@ -161,13 +167,14 @@ public class MainActivity extends AppCompatActivity {
             ImageView humidityIcon = view.findViewById(R.id.humidityIcon);
             ImageView pressureIcon = view.findViewById(R.id.pressureIcon);
 
-            ((TextView) view.findViewById(R.id.windTxt)).setText(""+regions.get(position).getWindSpeed()+"m/s");
-            ((TextView) view.findViewById(R.id.humidityTxt)).setText(""+regions.get(position).getHumidity()+"%");
-            ((TextView) view.findViewById(R.id.airPressTxt)).setText(""+regions.get(position).getPressure()+"hPa");
+            ((TextView) view.findViewById(R.id.windTxt)).setText(String.format("%s%s", regions.get(position).getWindSpeed(), getString(R.string.windUnit)));
+            ((TextView) view.findViewById(R.id.humidityTxt)).setText(""+regions.get(position).getHumidity()+getString(R.string.humUnit));
+            ((TextView) view.findViewById(R.id.airPressTxt)).setText(""+regions.get(position).getPressure()+getString(R.string.pressUnit));
 
             Glide.with(MainActivity.this)
-                    .load(iconUrl+regions.get(position).getIcon()+".png")
+                    .load(Uri.parse(iconUrl+regions.get(position).getIcon()+".png"))
                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.AUTOMATIC))
+                    .apply(RequestOptions.overrideOf(500,500))
                     .into(icon);
 
             Glide.with(MainActivity.this)
@@ -184,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
                     .load(R.drawable.ic_pressure)
                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.AUTOMATIC))
                     .into(pressureIcon);
+
             container.addView(view);
             return view;
         }
@@ -199,6 +207,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             return regions.size();
+        }
+
+        @Override
+        public int getItemPosition(Object object) {
+//            return super.getItemPosition(object);
+            return PagerAdapter.POSITION_NONE;
         }
 
         @Override
@@ -238,19 +252,11 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-
                 try {
                     String response = new String(responseBody, "UTF-8");
-
                     Log.e("responseLoginMain?: ", response);
-
-                    /*save user login data to shareprefs*/
-
                     getJSonObj(response);
-
                     progressDialog.dismiss();
-
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -260,7 +266,6 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                 try {
                     progressDialog.dismiss();
-
                     if (responseBody != null) {
                         String resuldata = new String(responseBody, "UTF-8");
                         Log.e("failureMainn", statusCode + resuldata);
@@ -313,5 +318,4 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-
 }

@@ -5,4 +5,7 @@
     <string name="wind">Wind</string>
     <string name="fetching_weather">Fetching weather...</string>
     <string name="none">--</string>
+    <string name="windUnit">m/s</string>
+    <string name="humUnit">%</string>
+    <string name="pressUnit">hPa</string>
 </resources>
