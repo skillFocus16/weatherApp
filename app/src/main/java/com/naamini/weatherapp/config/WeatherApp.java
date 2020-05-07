@@ -5,6 +5,9 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.naamini.weatherapp.activity.MainActivity;
 
 /**
  * Created by Naamini Yonazi on 06/05/20
@@ -26,36 +29,16 @@ public class WeatherApp extends Application {
         sInstance = this;
     }
 
-    public static boolean isOnline() {
-        boolean success=true;
-        try {
-            ConnectivityManager conMgr = (ConnectivityManager) weatherApp.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
+    public static boolean isOnline(Context context) {
+        ConnectivityManager conMgr = (ConnectivityManager) context.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
 
-            if(netInfo != null && netInfo.isConnected()){
-                /*try {
-                    URL url = new URL("https://google.com");
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setConnectTimeout(10000);
-                    connection.connect();
-                    success = connection.getResponseCode() == 200;
-                    success = true;
-                    Log.i("successIs?: ", String.valueOf(success));
+        if (netInfo == null || !netInfo.isConnected() || !netInfo.isAvailable()) {
+            Toast.makeText(context, "No internet connection, please retry", Toast.LENGTH_LONG).show();
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
-                Log.i("successNet?: ", String.valueOf(success));
-
-            }else {
-                success = false;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            return false;
         }
-
-        return success;
-
+        return true;
     }
 
 }

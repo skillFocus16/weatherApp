@@ -1,6 +1,5 @@
 package com.naamini.weatherapp.activity;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
@@ -19,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -40,6 +40,7 @@ import cz.msebera.android.httpclient.Header;
 
 import static com.naamini.weatherapp.config.Endpoints.get3Cities;
 import static com.naamini.weatherapp.config.Endpoints.iconUrl;
+import static com.naamini.weatherapp.config.WeatherApp.isOnline;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -47,28 +48,26 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private ViewPagerAdapter viewPagerAdapter;
     private LinearLayout layoutDots;
-    private static String[] array_welcome_title = {"Hello", "Howdy", "Hi"};
     private ArrayList<Region> regionArrayList;
     private Region mRegion;
-    private String regionName, desc;
-    private int windSpd,hum,press;
-    private double temp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
-        initComponents();
-//        loadWeather();
-//        new getWeather().execute(getoneCity+api_key);
-        gettingWeather();
+        try {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main2);
+            initComponents();
+            gettingWeather();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void initComponents() {
         viewPager = findViewById(R.id.view_pager);
         layoutDots = findViewById(R.id.layoutDots);
 
-        List<Region> regions = new ArrayList<>();
+        ArrayList<Region> regions = new ArrayList<>();
         /*for (int i = 0; i < array_welcome_title.length; i++) {
             Region obj = new Region();
 //            obj.name = array_welcome_title[i];
@@ -86,11 +85,11 @@ public class MainActivity extends AppCompatActivity {
         viewPagerAdapter.setItems(regions);
         viewPager.setAdapter(viewPagerAdapter);
         viewPager.setCurrentItem(0);
-        bottomProgressDots(viewPagerAdapter.getCount(),0);
+        bottomProgressDots(layoutDots,viewPagerAdapter.getCount(),0);
         viewPager.addOnPageChangeListener(viewPagerPageChangeListener);
     }
 
-    private void bottomProgressDots(int size, int current_index) {
+    private void bottomProgressDots(LinearLayout layoutDots, int size, int current_index) {
         ImageView[] dots = new ImageView[size];
 
         layoutDots.removeAllViews();
@@ -116,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageSelected(final int position) {
-            bottomProgressDots(viewPagerAdapter.getCount(),position);
+            bottomProgressDots(layoutDots, viewPagerAdapter.getCount(),position);
         }
 
         @Override
@@ -131,9 +130,9 @@ public class MainActivity extends AppCompatActivity {
 
     public class ViewPagerAdapter extends PagerAdapter {
         private LayoutInflater layoutInflater;
-        List<Region> regions;
+        ArrayList<Region> regions;
 
-        public ViewPagerAdapter(List<Region> regions) {
+        public ViewPagerAdapter(ArrayList<Region> regions) {
             this.regions = regions;
         }
 
@@ -144,6 +143,8 @@ public class MainActivity extends AppCompatActivity {
             View view = layoutInflater.inflate(R.layout.item_card, container, false);
             regions.get(position);
 
+            Log.e("regions?:",regions.toString());
+
             RelativeLayout mainLayout = view.findViewById(R.id.mainLayout);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 if(regions.get(position).getIcon().contains("n")) {
@@ -152,7 +153,6 @@ public class MainActivity extends AppCompatActivity {
                     mainLayout.setBackground(getResources().getDrawable(R.drawable.day));
                 }
             }
-
             TextView temp = view.findViewById(R.id.tempDegrees);
             TextView desc = view.findViewById(R.id.desc);
             TextView regName = view.findViewById(R.id.regName);
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
             return regions.get(pos);
         }
 
-        public void setItems(List<Region> regionList) {
+        public void setItems(ArrayList<Region> regionList) {
             this.regions = regionList;
             notifyDataSetChanged();
         }
@@ -244,10 +244,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStart() {
                 super.onStart();
-               /* if (!isOnline()) {
+                if (!isOnline(getApplicationContext())) {
                     progressDialog.dismiss();
-//                    showErrorSnackbar(getString(R.string.no_internet), getString(R.string.retry), 2);
-                }*/
+                }
             }
 
             @Override
@@ -269,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
                     if (responseBody != null) {
                         String resuldata = new String(responseBody, "UTF-8");
                         Log.e("failureMainn", statusCode + resuldata);
-//                        showErrorSnackbar(getString(R.string.incorrect_username_password), getString(R.string.retry), 2);
+                        Toast.makeText(MainActivity.this, "Error occured, please retry", Toast.LENGTH_LONG).show();
                         finish();
                     }
                 } catch (Exception e) {
@@ -282,13 +281,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void getJSonObj(String response) {
         regionArrayList = new ArrayList<>();
-        mRegion = new Region();
         try {
             JSONObject jObj = new JSONObject(response);
 
             JSONArray jsonArray = jObj.getJSONArray("list");
+            Log.e("Count??: ",jObj.getString("cnt"));
+
             for (int i=0; i<jObj.length(); i++) {
                 JSONObject in = jsonArray.getJSONObject(i);
+                mRegion = new Region();
 
                 JSONObject main = in.getJSONObject("main");
                 mRegion.setTemp(main.getDouble("temp"));
@@ -301,19 +302,18 @@ public class MainActivity extends AppCompatActivity {
                     mRegion.setMainDesc(we.getString("description"));
                     mRegion.setWeatherId(we.getInt("id"));
                     mRegion.setIcon(we.getString("icon"));
-                    Log.e("icon??:", we.getString("icon"));
                 }
 
                 JSONObject wind = in.getJSONObject("wind");
                 mRegion.setWindSpeed(wind.getDouble("speed"));
                 mRegion.setName(in.getString("name"));
+
+                regionArrayList.add(mRegion);
+                viewPagerAdapter = new ViewPagerAdapter(regionArrayList);
+                viewPager.setAdapter(viewPagerAdapter);
+                viewPagerAdapter.notifyDataSetChanged();
             }
 
-            regionArrayList.add(mRegion);
-
-            viewPagerAdapter = new ViewPagerAdapter(regionArrayList);
-            viewPager.setAdapter(viewPagerAdapter);
-            viewPagerAdapter.notifyDataSetChanged();
         } catch (JSONException e) {
                 e.printStackTrace();
             }
