@@ -15,7 +15,7 @@ public class Endpoints {
 
     public static String fullUrl = baseUrl+morogoroId+","+tangaCityId+","+darEsSalaamCityId+endUrl+"&APPID="+api_key;;
     public static String getoneCity ="http://api.openweathermap.org/data/2.5/weather?id=160260&APPID=cb0f64f8b422aec3e9eabf8a28de2501";
-    public static String get3Cities="http://api.openweathermap.org/data/2.5/group?id=153214,160260&units=metric&APPID=cb0f64f8b422aec3e9eabf8a28de2501";
+    public static String get3Cities="http://api.openweathermap.org/data/2.5/group?id=149595,160260,153214&units=metric&APPID=cb0f64f8b422aec3e9eabf8a28de2501";
     public static String iconUrl="http://openweathermap.org/img/wn/";
 
 }

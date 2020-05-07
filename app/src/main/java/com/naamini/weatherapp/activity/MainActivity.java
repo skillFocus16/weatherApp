@@ -254,7 +254,9 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     String response = new String(responseBody, "UTF-8");
                     Log.e("responseLoginMain?: ", response);
-                    getJSonObj(response);
+                    JSONObject jObj = new JSONObject(response);
+
+                    getJSonObj(jObj);
                     progressDialog.dismiss();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -279,22 +281,25 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void getJSonObj(String response) {
-        regionArrayList = new ArrayList<>();
+//    private void getJSonObj(String response) {
+    private void getJSonObj(JSONObject response) {
         try {
-            JSONObject jObj = new JSONObject(response);
+            JSONArray arrList = response.getJSONArray("list");
 
-            JSONArray jsonArray = jObj.getJSONArray("list");
-            Log.e("Count??: ",jObj.getString("cnt"));
+            regionArrayList = new ArrayList<>();
 
-            for (int i=0; i<jObj.length(); i++) {
-                JSONObject in = jsonArray.getJSONObject(i);
-                mRegion = new Region();
+            for (int i=0; i<arrList.length(); i++) {
+                JSONObject in = arrList.getJSONObject(i);
+               mRegion = new Region();
 
                 JSONObject main = in.getJSONObject("main");
                 mRegion.setTemp(main.getDouble("temp"));
                 mRegion.setPressure(main.getInt("pressure"));
                 mRegion.setHumidity(main.getInt("humidity"));
+
+                JSONObject wind = in.getJSONObject("wind");
+                mRegion.setWindSpeed(wind.getDouble("speed"));
+                mRegion.setName(in.getString("name"));
 
                 JSONArray weatherArray = in.getJSONArray("weather");
                 for (int j=0; j<weatherArray.length(); j++) {
@@ -303,17 +308,11 @@ public class MainActivity extends AppCompatActivity {
                     mRegion.setWeatherId(we.getInt("id"));
                     mRegion.setIcon(we.getString("icon"));
                 }
-
-                JSONObject wind = in.getJSONObject("wind");
-                mRegion.setWindSpeed(wind.getDouble("speed"));
-                mRegion.setName(in.getString("name"));
-
                 regionArrayList.add(mRegion);
-                viewPagerAdapter = new ViewPagerAdapter(regionArrayList);
-                viewPager.setAdapter(viewPagerAdapter);
-                viewPagerAdapter.notifyDataSetChanged();
             }
-
+            viewPagerAdapter = new ViewPagerAdapter(regionArrayList);
+            viewPager.setAdapter(viewPagerAdapter);
+            viewPagerAdapter.notifyDataSetChanged();
         } catch (JSONException e) {
                 e.printStackTrace();
             }
