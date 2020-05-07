@@ -4,10 +4,9 @@ import android.app.Application;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.naamini.weatherapp.activity.MainActivity;
+import com.naamini.weatherapp.R;
 
 /**
  * Created by Naamini Yonazi on 06/05/20
@@ -15,7 +14,6 @@ import com.naamini.weatherapp.activity.MainActivity;
 public class WeatherApp extends Application {
 
     private static WeatherApp sInstance;
-
     static WeatherApp weatherApp;
 
     public static synchronized WeatherApp getInstance()
@@ -34,11 +32,10 @@ public class WeatherApp extends Application {
         NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
 
         if (netInfo == null || !netInfo.isConnected() || !netInfo.isAvailable()) {
-            Toast.makeText(context, "No internet connection, please retry", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, R.string.no_internet, Toast.LENGTH_LONG).show();
 
             return false;
         }
         return true;
     }
-
 }

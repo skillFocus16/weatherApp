@@ -8,4 +8,7 @@
     <string name="windUnit">m/s</string>
     <string name="humUnit">%</string>
     <string name="pressUnit">hPa</string>
+    <string name="error_occured">Error occured, please retry</string>
+    <string name="no_internet">No internet connection, please retry</string>
+    <string name="png">.png</string>
 </resources>

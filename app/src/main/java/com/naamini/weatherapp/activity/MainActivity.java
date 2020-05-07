@@ -1,6 +1,7 @@
 package com.naamini.weatherapp.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
@@ -10,7 +11,6 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,23 +33,37 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
-import static com.naamini.weatherapp.config.Endpoints.get3Cities;
-import static com.naamini.weatherapp.config.Endpoints.iconUrl;
+import static com.naamini.weatherapp.config.Endpoints.getThreeCitiesFullUrl;
+import static com.naamini.weatherapp.config.Endpoints.weatherIconUrl;
 import static com.naamini.weatherapp.config.WeatherApp.isOnline;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int MAX_STEP = 3;
     private ViewPager viewPager;
     private ViewPagerAdapter viewPagerAdapter;
     private LinearLayout layoutDots;
-    private ArrayList<Region> regionArrayList;
-    private Region mRegion;
+    ViewPager.OnPageChangeListener viewPagerPageChangeListener = new ViewPager.OnPageChangeListener() {
+
+        @Override
+        public void onPageSelected(final int position) {
+            bottomProgressDots(layoutDots, viewPagerAdapter.getCount(), position);
+        }
+
+        @Override
+        public void onPageScrolled(int arg0, float arg1, int arg2) {
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int arg0) {
+
+        }
+    };
+    private CardView noNetCardView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,29 +78,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initComponents() {
+        noNetCardView = findViewById(R.id.noNet);
         viewPager = findViewById(R.id.view_pager);
         layoutDots = findViewById(R.id.layoutDots);
 
         ArrayList<Region> regions = new ArrayList<>();
-        /*for (int i = 0; i < array_welcome_title.length; i++) {
-            Region obj = new Region();
-//            obj.name = array_welcome_title[i];
-//            obj.setName(array_welcome_title[i]);
-            obj.setName(regionName);
-            obj.setWindSpeed(windSpd);
-            obj.setHumidity(hum);
-            obj.setPressure(press);
-            obj.setTemp(temp);
-            obj.setMainDesc("yesss");
-            regions.add(obj);
-        }*/
+
         viewPagerAdapter = new ViewPagerAdapter(regions);
 
         viewPagerAdapter.setItems(regions);
         viewPager.setAdapter(viewPagerAdapter);
         viewPager.setCurrentItem(0);
-        bottomProgressDots(layoutDots,viewPagerAdapter.getCount(),0);
+        bottomProgressDots(layoutDots, viewPagerAdapter.getCount(), 0);
         viewPager.addOnPageChangeListener(viewPagerPageChangeListener);
+
+        noNetCardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                gettingWeather();
+            }
+        });
     }
 
     private void bottomProgressDots(LinearLayout layoutDots, int size, int current_index) {
@@ -94,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
         layoutDots.removeAllViews();
 
-        for (int i = 0; i< dots.length; i++){
+        for (int i = 0; i < dots.length; i++) {
             dots[i] = new ImageView(this);
             int width_height = 15;
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(new ViewGroup.LayoutParams(width_height, width_height));
@@ -111,26 +122,100 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    ViewPager.OnPageChangeListener viewPagerPageChangeListener = new ViewPager.OnPageChangeListener() {
+    private void gettingWeather() {
+        final ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
+        progressDialog.setMessage(getString(R.string.fetching_weather));
+        progressDialog.setCancelable(false);
+        progressDialog.show();
 
-        @Override
-        public void onPageSelected(final int position) {
-            bottomProgressDots(layoutDots, viewPagerAdapter.getCount(),position);
+        RequestParams params = new RequestParams();
+
+        final int DEFAULT_TIMEOUT = 20 * 1000;
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.setTimeout(DEFAULT_TIMEOUT);
+        client.get(getThreeCitiesFullUrl, params, new AsyncHttpResponseHandler() {
+
+            @Override
+            public void onStart() {
+                super.onStart();
+                if (!isOnline(getApplicationContext())) {
+                    noNetCardView.setVisibility(View.VISIBLE);
+                }else {
+                    noNetCardView.setVisibility(View.GONE);
+                }
+
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                try {
+                    String response = new String(responseBody, StandardCharsets.UTF_8);
+
+                    JSONObject jObj = new JSONObject(response);
+                    getJSonObj(jObj);
+                    progressDialog.dismiss();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                try {
+                    progressDialog.dismiss();
+                    if (responseBody != null) {
+                        String resuldata = new String(responseBody, StandardCharsets.UTF_8);
+                        Toast.makeText(MainActivity.this, R.string.error_occured, Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+        });
+    }
+
+    private void getJSonObj(JSONObject response) {
+        try {
+            JSONArray arrList = response.getJSONArray("list");
+
+            ArrayList<Region> regionArrayList = new ArrayList<>();
+
+            for (int i = 0; i < arrList.length(); i++) {
+                JSONObject in = arrList.getJSONObject(i);
+                Region mRegion = new Region();
+
+                JSONObject main = in.getJSONObject("main");
+                mRegion.setTemp(main.getDouble("temp"));
+                mRegion.setPressure(main.getInt("pressure"));
+                mRegion.setHumidity(main.getInt("humidity"));
+
+                JSONObject wind = in.getJSONObject("wind");
+                mRegion.setWindSpeed(wind.getDouble("speed"));
+                mRegion.setName(in.getString("name"));
+
+                JSONArray weatherArray = in.getJSONArray("weather");
+                for (int j = 0; j < weatherArray.length(); j++) {
+                    JSONObject we = weatherArray.getJSONObject(j);
+                    mRegion.setMainDesc(we.getString("description"));
+                    mRegion.setWeatherId(we.getInt("id"));
+                    mRegion.setIcon(we.getString("icon"));
+                }
+                regionArrayList.add(mRegion);
+            }
+            viewPagerAdapter = new ViewPagerAdapter(regionArrayList);
+            viewPager.setAdapter(viewPagerAdapter);
+            viewPagerAdapter.notifyDataSetChanged();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-
-        @Override
-        public void onPageScrolled(int arg0, float arg1, int arg2) {
-        }
-
-        @Override
-        public void onPageScrollStateChanged(int arg0) {
-
-        }
-    };
+    }
 
     public class ViewPagerAdapter extends PagerAdapter {
-        private LayoutInflater layoutInflater;
         ArrayList<Region> regions;
+        private LayoutInflater layoutInflater;
 
         public ViewPagerAdapter(ArrayList<Region> regions) {
             this.regions = regions;
@@ -143,13 +228,11 @@ public class MainActivity extends AppCompatActivity {
             View view = layoutInflater.inflate(R.layout.item_card, container, false);
             regions.get(position);
 
-            Log.e("regions?:",regions.toString());
-
             RelativeLayout mainLayout = view.findViewById(R.id.mainLayout);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                if(regions.get(position).getIcon().contains("n")) {
+                if (regions.get(position).getIcon().contains("n")) {
                     mainLayout.setBackground(getResources().getDrawable(R.drawable.night));
-                }else {
+                } else {
                     mainLayout.setBackground(getResources().getDrawable(R.drawable.day));
                 }
             }
@@ -157,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
             TextView desc = view.findViewById(R.id.desc);
             TextView regName = view.findViewById(R.id.regName);
 
-            temp.setText(String.valueOf(regions.get(position).getTemp())+(char) 0x00B0);
+            temp.setText(String.valueOf(regions.get(position).getTemp()) + (char) 0x00B0);
             desc.setText(String.valueOf(regions.get(position).getMainDesc()));
 
             regName.setText(String.valueOf(regions.get(position).getName()));
@@ -168,13 +251,14 @@ public class MainActivity extends AppCompatActivity {
             ImageView pressureIcon = view.findViewById(R.id.pressureIcon);
 
             ((TextView) view.findViewById(R.id.windTxt)).setText(String.format("%s%s", regions.get(position).getWindSpeed(), getString(R.string.windUnit)));
-            ((TextView) view.findViewById(R.id.humidityTxt)).setText(""+regions.get(position).getHumidity()+getString(R.string.humUnit));
-            ((TextView) view.findViewById(R.id.airPressTxt)).setText(""+regions.get(position).getPressure()+getString(R.string.pressUnit));
+            ((TextView) view.findViewById(R.id.humidityTxt)).setText("" + regions.get(position).getHumidity() + getString(R.string.humUnit));
+            ((TextView) view.findViewById(R.id.airPressTxt)).setText("" + regions.get(position).getPressure() + getString(R.string.pressUnit));
 
             Glide.with(MainActivity.this)
-                    .load(Uri.parse(iconUrl+regions.get(position).getIcon()+".png"))
+                    .load(Uri.parse(weatherIconUrl + regions.get(position).getIcon() + getString(R.string.png)
+                    ))
                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.AUTOMATIC))
-                    .apply(RequestOptions.overrideOf(500,500))
+                    .apply(RequestOptions.overrideOf(500, 500))
                     .into(icon);
 
             Glide.with(MainActivity.this)
@@ -195,6 +279,7 @@ public class MainActivity extends AppCompatActivity {
             container.addView(view);
             return view;
         }
+
         public Region getItem(int pos) {
             return regions.get(pos);
         }
@@ -211,7 +296,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemPosition(Object object) {
-//            return super.getItemPosition(object);
             return PagerAdapter.POSITION_NONE;
         }
 
@@ -220,101 +304,10 @@ public class MainActivity extends AppCompatActivity {
             return view == obj;
         }
 
-
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
             View view = (View) object;
             container.removeView(view);
         }
     }
-
-    private void gettingWeather() {
-        final ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
-        progressDialog.setMessage(getString(R.string.fetching_weather));
-        progressDialog.setCancelable(false);
-        progressDialog.show();
-
-        RequestParams params = new RequestParams();
-
-        final int DEFAULT_TIMEOUT = 20 * 1000;
-        AsyncHttpClient client = new AsyncHttpClient();
-        client.setTimeout(DEFAULT_TIMEOUT);
-        client.get(get3Cities, params, new AsyncHttpResponseHandler() {
-
-            @Override
-            public void onStart() {
-                super.onStart();
-                if (!isOnline(getApplicationContext())) {
-                    progressDialog.dismiss();
-                }
-            }
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                try {
-                    String response = new String(responseBody, "UTF-8");
-                    Log.e("responseLoginMain?: ", response);
-                    JSONObject jObj = new JSONObject(response);
-
-                    getJSonObj(jObj);
-                    progressDialog.dismiss();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                try {
-                    progressDialog.dismiss();
-                    if (responseBody != null) {
-                        String resuldata = new String(responseBody, "UTF-8");
-                        Log.e("failureMainn", statusCode + resuldata);
-                        Toast.makeText(MainActivity.this, "Error occured, please retry", Toast.LENGTH_LONG).show();
-                        finish();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-        });
-    }
-
-//    private void getJSonObj(String response) {
-    private void getJSonObj(JSONObject response) {
-        try {
-            JSONArray arrList = response.getJSONArray("list");
-
-            regionArrayList = new ArrayList<>();
-
-            for (int i=0; i<arrList.length(); i++) {
-                JSONObject in = arrList.getJSONObject(i);
-               mRegion = new Region();
-
-                JSONObject main = in.getJSONObject("main");
-                mRegion.setTemp(main.getDouble("temp"));
-                mRegion.setPressure(main.getInt("pressure"));
-                mRegion.setHumidity(main.getInt("humidity"));
-
-                JSONObject wind = in.getJSONObject("wind");
-                mRegion.setWindSpeed(wind.getDouble("speed"));
-                mRegion.setName(in.getString("name"));
-
-                JSONArray weatherArray = in.getJSONArray("weather");
-                for (int j=0; j<weatherArray.length(); j++) {
-                    JSONObject we = weatherArray.getJSONObject(j);
-                    mRegion.setMainDesc(we.getString("description"));
-                    mRegion.setWeatherId(we.getInt("id"));
-                    mRegion.setIcon(we.getString("icon"));
-                }
-                regionArrayList.add(mRegion);
-            }
-            viewPagerAdapter = new ViewPagerAdapter(regionArrayList);
-            viewPager.setAdapter(viewPagerAdapter);
-            viewPagerAdapter.notifyDataSetChanged();
-        } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
 }
